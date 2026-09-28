@@ -21,10 +21,9 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenE
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: HeartPulse },
+    { id: 'appointments', label: 'Patient Appointment System', icon: Calendar },
     { id: 'assistant', label: 'AI Health Assistant', icon: Bot, isSpecial: true },
     { id: 'doctors', label: 'Find a Doctor', icon: UserCheck },
-    { id: 'appointments', label: 'Book Appointment', icon: Calendar },
     { id: 'resources', label: 'Health Resources', icon: BookOpen },
     { id: 'dashboard', label: 'Patient Portal', icon: User },
   ];
@@ -41,7 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenE
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo & Clinical Brand */}
           <button
-            onClick={() => handleNavClick('home')}
+            onClick={() => handleNavClick('appointments')}
             className="flex items-center gap-2.5 text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-700 to-emerald-500 flex items-center justify-center text-white shadow-sm shadow-teal-500/20 group-hover:scale-105 transition-transform">

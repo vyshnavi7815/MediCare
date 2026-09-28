@@ -223,7 +223,7 @@ We are currently operating in high-availability mode. For general symptoms such 
 Whenever symptoms cause distress, persist beyond 48-72 hours, or worsen, please schedule an appointment with a qualified clinician.
 
 ---
-*Disclaimer: This assistant provides general health education and is not a substitute for professional medical advice, diagnosis, or treatment.*`,
+*Disclaimer: This assistant provides general health education only and is not a substitute for professional medical advice, diagnosis, or treatment.*`,
     isEmergency: false,
     followUpQuestions: [
       'What specific symptoms have you observed today?',
@@ -231,3 +231,120 @@ Whenever symptoms cause distress, persist beyond 48-72 hours, or worsen, please 
     ],
   };
 }
+
+export interface HealthEducationData {
+  overview: string;
+  selfCare: string;
+  reflectionQuestions: string[];
+  doctorWhen: string;
+  isEmergency: boolean;
+}
+
+export async function generateHealthEducation(reason: string, specialty?: string): Promise<HealthEducationData> {
+  const lower = reason.toLowerCase();
+  const emergencyKeywords = [
+    'chest pain', 'heart attack', 'stroke', 'cant breathe', 'cannot breathe',
+    'shortness of breath', 'severe bleeding', 'unconscious', 'anaphylaxis',
+    'suicide', 'kill myself', 'overdose', 'facial drooping', 'paralyzed'
+  ];
+
+  const isEmergency = emergencyKeywords.some(kw => lower.includes(kw));
+
+  if (isEmergency) {
+    return {
+      isEmergency: true,
+      overview: 'The symptoms described may indicate an acute, urgent clinical event that requires immediate emergency evaluation rather than routine outpatient scheduling.',
+      selfCare: 'Remain as calm and still as possible. Seat yourself in an upright, supported position. Unlock your entry doors so emergency responders can access you without delay.',
+      reflectionQuestions: [
+        'Are you currently accompanied by someone who can provide immediate assistance?',
+        'Do symptoms include radiating pressure to the left arm/jaw, or sudden speech or facial numbness?'
+      ],
+      doctorWhen: 'Call 911 (or 112 internationally) immediately. Do not attempt to drive yourself to an emergency facility if experiencing severe chest pressure, respiratory arrest, or sudden neurological deficits.',
+    };
+  }
+
+  // Check specific health topics for tailored educational insights
+  if (lower.includes('blood pressure') || lower.includes('hypertension') || specialty === 'Cardiology') {
+    return {
+      isEmergency: false,
+      overview: 'Blood pressure reflects the hydrostatic force that circulating blood exerts against arterial walls. Elevated readings may be influenced by multiple physiological factors, including temporary physical stress, caffeine, sodium intake, or vascular resistance changes.',
+      selfCare: 'Rest quietly in a seated position for 5 minutes prior to measurements with feet flat. Consider keeping a twice-daily home blood pressure log. Gentle walking, hydration, and reducing dietary sodium may support circulatory wellness.',
+      reflectionQuestions: [
+        'Over what timeline have you noticed elevated readings or cardiovascular symptoms?',
+        'Are you experiencing accompanying symptoms such as morning headaches, visual changes, or palpitations?',
+        'Do you take any regular prescription medications or dietary supplements?'
+      ],
+      doctorWhen: 'Consult a physician if resting home blood pressure consistently exceeds 130/80 mmHg across multiple days. If readings exceed 180/120 mmHg or are accompanied by chest pain, seek emergency medical care immediately.'
+    };
+  }
+
+  if (lower.includes('headache') || lower.includes('migraine') || specialty === 'Neurology') {
+    return {
+      isEmergency: false,
+      overview: 'Headaches can arise from primary neurological patterns (such as tension or migraine mechanisms) or secondary triggers like dehydration, cervical spine tension, or screen-related eye strain. One possible cause may be muscular contraction of cranial and neck tissues.',
+      selfCare: 'Rest in a quiet, dimly lit room. Applying a cool compress to the forehead or a warm compress to the neck may provide comfort. Ensure adequate water intake and practice gentle neck mobility stretches.',
+      reflectionQuestions: [
+        'How would you describe the sensation—is it throbbing, dull, or a band-like squeezing pressure?',
+        'Have you noticed specific triggers such as skipped meals, lack of sleep, or screen exposure?',
+        'Are you experiencing sensitivity to light, sound, or nausea?'
+      ],
+      doctorWhen: 'Professional evaluation is advisable if headaches increase in frequency, severity, or fail to respond to rest. Seek immediate emergency care if a headache strikes with sudden, extreme intensity (thunderclap) or is accompanied by fever, neck stiffness, or confusion.'
+    };
+  }
+
+  if (lower.includes('fever') || lower.includes('child') || lower.includes('baby') || specialty === 'Pediatrics') {
+    return {
+      isEmergency: false,
+      overview: 'A fever is generally an adaptive physiological immune response to viral or bacterial antigens, in which the hypothalamus raises core body temperature to slow pathogen replication.',
+      selfCare: 'Maintain frequent sips of fluids (water, electrolyte solutions, or broths). Dress in light, breathable clothing and rest in a well-ventilated room. Lukewarm sponge baths can offer comfort.',
+      reflectionQuestions: [
+        'What is the measured temperature, and how many days has it been elevated?',
+        'Are there accompanying symptoms such as cough, ear pulling, rash, or reduced urination?',
+        'Is the individual maintaining adequate hydration and alertness?'
+      ],
+      doctorWhen: 'Contact a healthcare provider if a fever lasts longer than 3 days, rises above 103°F (39.4°C) in adults, or occurs in an infant under 3 months of age (which requires same-day emergency assessment).'
+    };
+  }
+
+  if (lower.includes('rash') || lower.includes('skin') || lower.includes('eczema') || specialty === 'Dermatology') {
+    return {
+      isEmergency: false,
+      overview: 'Cutaneous reactions can stem from immune-mediated allergic contact dermatitis, xerosis (dry skin barrier), viral exanthems, or chronic inflammatory skin conditions. One possible cause may be contact with an irritant or allergen.',
+      selfCare: 'Cleanse the area with mild, fragrance-free cleansers. Avoid hot showers and harsh soaps. Apply a hypoallergenic ceramide moisturizer to damp skin to support the barrier.',
+      reflectionQuestions: [
+        'When did the skin reaction first appear, and has it spread to other areas of the body?',
+        'Have you recently introduced new laundry detergents, personal care products, or medications?',
+        'Is the skin primarily itchy, burning, blistered, or tender to the touch?'
+      ],
+      doctorWhen: 'Consult a dermatologist or primary care doctor if the rash is painful, exhibits signs of infection (such as yellow crusting or pus), or does not improve with gentle skincare. Seek immediate emergency care if a rash is accompanied by facial swelling, hives, or breathing difficulty.'
+    };
+  }
+
+  if (lower.includes('back') || lower.includes('joint') || lower.includes('knee') || lower.includes('shoulder') || specialty === 'Orthopedics') {
+    return {
+      isEmergency: false,
+      overview: 'Musculoskeletal discomfort may originate from ligamentous strain, tendon irritation, muscular spasm, or joint biomechanical imbalance. One possible contributing factor can be prolonged sedentary posture or unconditioned lifting.',
+      selfCare: 'Adopt gentle, pain-free mobility movements. Avoid prolonged bed rest, as gentle walking can promote blood flow to healing tissues. An ice pack wrapped in a cloth or mild heat may provide temporary relief.',
+      reflectionQuestions: [
+        'Did the discomfort begin following a specific lifting, twisting, or athletic movement?',
+        'Does the sensation radiate down an arm or leg, or remain localized?',
+        'What positions or activities make the discomfort better or worse?'
+      ],
+      doctorWhen: 'Schedule a medical assessment if joint or spinal discomfort persists beyond a week, restricts normal walking, or causes swelling. Seek immediate emergency attention if back pain is accompanied by loss of bowel/bladder control or progressive numbness in the legs.'
+    };
+  }
+
+  // General fallback
+  return {
+    isEmergency: false,
+    overview: 'Health symptoms can represent the body’s adaptive response to environmental factors, mild viral infections, fatigue, or underlying physiological imbalances. One possible cause may be everyday physical stress or lifestyle fluctuations.',
+    selfCare: 'Prioritize adequate hydration, restorative sleep (7–9 hours for adults), nutritious whole foods, and pacing daily activities. Avoid strenuous exertion while symptoms are actively resolving.',
+    reflectionQuestions: [
+      'How long have you experienced this concern, and have symptoms worsened over time?',
+      'Have you noticed any specific triggers, times of day, or activities that affect the condition?',
+      'Are you taking any over-the-counter medications, and have they provided any relief?'
+    ],
+    doctorWhen: 'A clinical consultation is recommended whenever symptoms persist, disrupt sleep or daily productivity, or cause distress. If any sudden severe signs appear, seek immediate emergency care.'
+  };
+}
+

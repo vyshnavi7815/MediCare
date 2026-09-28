@@ -44,6 +44,20 @@ export interface Appointment {
   prescriptionSummary?: string;
 }
 
+export interface AppointmentState {
+  patientName: string;
+  patientEmail: string;
+  patientPhone: string;
+  doctorId: string;
+  doctorName: string;
+  specialty: string;
+  date: string;
+  time: string;
+  mode: ConsultationMode | '';
+  reason: string;
+  notes: string;
+}
+
 export interface HealthResource {
   id: string;
   title: string;

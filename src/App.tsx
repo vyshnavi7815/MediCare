@@ -18,7 +18,7 @@ import { EmergencyPage } from './pages/EmergencyPage';
 import { Doctor } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>('home');
+  const [activeTab, setActiveTab] = useState<string>('appointments');
   const [selectedDoctorForBooking, setSelectedDoctorForBooking] = useState<Doctor | null>(null);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [policyModal, setPolicyModal] = useState<{
@@ -40,6 +40,8 @@ export default function App() {
 
   const handleSelectDoctorForBooking = (doctor: Doctor) => {
     setSelectedDoctorForBooking(doctor);
+    setActiveTab('appointments');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectResource = (resourceId: string) => {
@@ -60,6 +62,17 @@ export default function App() {
 
       {/* Main Page Content */}
       <main className="flex-1">
+        {activeTab === 'appointments' && (
+          <AppointmentsPage
+            selectedDoctor={selectedDoctorForBooking}
+            setSelectedDoctor={setSelectedDoctorForBooking}
+            setActiveTab={setActiveTab}
+            onAppointmentCreated={() => {
+              // Can trigger notifications if needed
+            }}
+          />
+        )}
+
         {activeTab === 'home' && (
           <HomePage
             setActiveTab={setActiveTab}
@@ -83,17 +96,6 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'appointments' && (
-          <AppointmentsPage
-            selectedDoctor={selectedDoctorForBooking}
-            setSelectedDoctor={setSelectedDoctorForBooking}
-            setActiveTab={setActiveTab}
-            onAppointmentCreated={() => {
-              // Can trigger notifications if needed
-            }}
-          />
-        )}
-
         {activeTab === 'resources' && (
           <ResourcesPage selectedResourceId={selectedResourceId} />
         )}
@@ -109,7 +111,7 @@ export default function App() {
         )}
 
         {activeTab === 'emergency' && (
-          <EmergencyPage onBackToHome={() => setActiveTab('home')} />
+          <EmergencyPage onBackToHome={() => setActiveTab('appointments')} />
         )}
       </main>
 
