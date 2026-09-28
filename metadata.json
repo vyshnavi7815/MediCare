@@ -1,0 +1,6 @@
+{
+  "name": "MediCare AI - Modern Healthcare & Clinical AI Assistant",
+  "description": "Comprehensive healthcare portal featuring an AI educational health assistant, doctor directory, appointment scheduling, evidence-based medical resources, patient dashboard, and emergency triage information.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
