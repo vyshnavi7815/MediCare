@@ -180,37 +180,87 @@ export async function cancelAppointment(id: string): Promise<boolean> {
   return true;
 }
 
-// AI Health Assistant API call
+export const N8N_CHAT_WEBHOOK_URL = 'https://vyla30.app.n8n.cloud/webhook/25564597-e050-4d8e-8117-62f1a3d07b71/chat';
+
+// Get or generate a persistent session ID for the n8n chat
+export function getN8nSessionId(): string {
+  try {
+    let sId = localStorage.getItem('medicare_n8n_session_id');
+    if (!sId) {
+      sId = 'session_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+      localStorage.setItem('medicare_n8n_session_id', sId);
+    }
+    return sId;
+  } catch (e) {
+    return 'session_fallback_' + Date.now();
+  }
+}
+
+// AI Health Assistant API call (Powered by user's n8n webhook)
 export async function sendChatMessage(message: string, history: ChatMessage[]): Promise<{
   reply: string;
   isEmergency: boolean;
   followUpQuestions?: string[];
   suggestedAction?: string;
+  engine?: string;
 }> {
+  const sessionId = getN8nSessionId();
+
+  // 1. First attempt: call local /api/chat proxy (which forwards to n8n server-side)
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message,
+        sessionId,
         history: history.map((h) => ({ sender: h.sender, text: h.text })),
       }),
     });
 
     if (res.ok) {
       const data = await res.json();
-      return {
-        reply: data.reply,
-        isEmergency: !!data.isEmergency,
-        followUpQuestions: data.followUpQuestions,
-        suggestedAction: data.suggestedAction,
-      };
+      if (data.reply) {
+        return {
+          reply: data.reply,
+          isEmergency: !!data.isEmergency,
+          followUpQuestions: data.followUpQuestions,
+          suggestedAction: data.suggestedAction,
+          engine: data.engine || 'n8n-webhook',
+        };
+      }
     }
   } catch (err) {
-    console.warn('Error connecting to /api/chat, triggering client fallback:', err);
+    console.warn('/api/chat proxy unreachable, attempting direct n8n webhook call:', err);
   }
 
-  // Client safety fallback in case server was restarting
+  // 2. Second attempt: call n8n webhook directly from browser
+  try {
+    const n8nRes = await fetch(N8N_CHAT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chatInput: message,
+        sessionId,
+      }),
+    });
+
+    if (n8nRes.ok) {
+      const data = await n8nRes.json();
+      const output = data.output || data.text || data.message || (typeof data === 'string' ? data : '');
+      if (output) {
+        return {
+          reply: output,
+          isEmergency: /chest pain|heart attack|stroke|cant breathe|suicid/i.test(message),
+          engine: 'n8n-direct-cloud',
+        };
+      }
+    }
+  } catch (directErr) {
+    console.warn('Direct n8n webhook call failed, falling back to clinical engine:', directErr);
+  }
+
+  // Client safety fallback in case webhook is temporarily unreachable
   return {
     reply: `### 🩺 Educational Health Overview
 We are currently operating in high-availability mode. For general symptoms such as mild headache, seasonal congestion, or fatigue, common clinical guidance recommends hydration, quality rest, balanced nutrition, and monitoring for pattern changes.
@@ -225,6 +275,7 @@ Whenever symptoms cause distress, persist beyond 48-72 hours, or worsen, please 
 ---
 *Disclaimer: This assistant provides general health education only and is not a substitute for professional medical advice, diagnosis, or treatment.*`,
     isEmergency: false,
+    engine: 'medicare-offline-fallback',
     followUpQuestions: [
       'What specific symptoms have you observed today?',
       'Would you like to book an appointment with one of our board-certified doctors?',

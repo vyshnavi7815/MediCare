@@ -228,10 +228,12 @@ const appointmentsStore: Appointment[] = [
   },
 ];
 
+const N8N_CHAT_WEBHOOK_URL = 'https://vyla30.app.n8n.cloud/webhook/25564597-e050-4d8e-8117-62f1a3d07b71/chat';
+
 // POST /api/chat
 app.post('/api/chat', async (req: Request, res: Response) => {
   try {
-    const { message, history } = req.body;
+    const { message, history, sessionId } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message text is required' });
@@ -239,7 +241,44 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 
     const isEmergency = checkEmergency(message);
 
-    // If Gemini client is active and configured, use gemini-2.5-flash with clinical safety instructions
+    // 1. Primary Engine: Try calling the user's n8n chatbot webhook
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      const n8nRes = await fetch(N8N_CHAT_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatInput: message,
+          sessionId: sessionId || 'medicare-user-session',
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (n8nRes.ok) {
+        const data = (await n8nRes.json()) as any;
+        const reply =
+          data?.output ||
+          data?.text ||
+          data?.message ||
+          (typeof data === 'string' ? data : '');
+
+        if (reply && typeof reply === 'string' && reply.trim() !== '') {
+          return res.json({
+            reply,
+            isEmergency,
+            engine: 'n8n-medicare-cloud',
+          });
+        }
+      }
+    } catch (n8nError: any) {
+      console.warn('n8n webhook call failed, falling back to secondary engine:', n8nError?.message || n8nError);
+    }
+
+    // 2. Secondary Engine: If Gemini client is active and configured
     if (ai) {
       try {
         const systemInstruction = `You are MediCare AI, a compassionate, accurate, and safety-focused clinical health educator.

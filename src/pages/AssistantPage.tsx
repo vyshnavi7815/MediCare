@@ -27,8 +27,9 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     id: 'msg-welcome',
     sender: 'assistant',
     text: `### Hello, I am your MediCare AI Health Assistant 🩺
+*Powered by n8n Cloud Workflow Integration*
 
-I can help explain common health symptoms, clarify medical terminology, outline lifestyle & preventive strategies, and suggest questions to discuss with your doctor.
+I can help explain common health symptoms, clarify medical terminology, outline lifestyle & preventive strategies, recommend board-certified specialists, and assist your appointment scheduling.
 
 **Clear Safety Disclaimer:**
 *I provide general health education only. I do not provide clinical diagnoses, prescribe medications, or replace the care of a licensed physician.*
@@ -253,10 +254,11 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ setActiveTab, onOp
             <Bot className="w-7 h-7" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-bold text-slate-900">MediCare AI Health Assistant</h1>
-              <span className="text-[11px] font-semibold px-2 py-0.5 bg-teal-50 text-teal-800 border border-teal-200 rounded-full">
-                Educational Model
+              <span className="text-[11px] font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                n8n Cloud AI Active
               </span>
             </div>
             <p className="text-xs text-slate-500">

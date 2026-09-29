@@ -8,6 +8,7 @@ import { Navbar } from './components/Navbar';
 import { EmergencyBanner } from './components/EmergencyBanner';
 import { Footer } from './components/Footer';
 import { MedicalDisclaimerModal } from './components/MedicalDisclaimerModal';
+import { N8nChatbotWidget } from './components/N8nChatbotWidget';
 import { HomePage } from './pages/HomePage';
 import { AssistantPage } from './pages/AssistantPage';
 import { FindDoctorPage } from './pages/FindDoctorPage';
@@ -114,6 +115,18 @@ export default function App() {
           <EmergencyPage onBackToHome={() => setActiveTab('appointments')} />
         )}
       </main>
+
+      {/* Floating n8n Chatbot Widget */}
+      <N8nChatbotWidget
+        onOpenFullAssistant={() => {
+          setActiveTab('assistant');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onNavigateAppointments={() => {
+          setActiveTab('appointments');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
 
       {/* Clinical Healthcare Footer */}
       <Footer
